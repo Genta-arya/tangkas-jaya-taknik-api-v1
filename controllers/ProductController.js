@@ -1,4 +1,4 @@
-import pkg from "firebase-admin";
+
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { PrismaClient } from "@prisma/client";
@@ -10,7 +10,8 @@ const __dirname = dirname(__filename);
 import { readFileSync } from "fs";
 import fs from "fs/promises";
 import { type } from "os";
-const { admin } = pkg;
+
+import pkg from "firebase-admin";
 pkg.initializeApp({
   credential: pkg.credential.cert(ServiceAccount),
   storageBucket: "ac-service-34683.appspot.com",
