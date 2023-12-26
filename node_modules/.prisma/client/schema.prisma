@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Order {
+  id           Int           @id @default(autoincrement())
+  uid          String
+  username     String
+  orderDetails OrderDetails?
+  location     Location?
+}
+
+model OrderDetails {
+  id         Int      @id @default(autoincrement())
+  name       String
+  nm_product String
+  qty        Int
+  price      Int
+  status     String
+  url        String?
+  orderId    Int      @unique
+  createdAt  DateTime @default(now()) 
+  order      Order    @relation(fields: [orderId], references: [id])
+}
+
+model Location {
+  id        Int    @id @default(autoincrement())
+  address   String
+  latitude  Float
+  longitude Float
+  orderId   Int    @unique
+  order     Order  @relation(fields: [orderId], references: [id])
+}
+
+model Auth {
+  uid       Int     @id @default(autoincrement())
+  username  String  @db.VarChar(255)
+  email     String  @db.VarChar(255)
+  password  String  @db.VarChar(255)
+  token_jwt String? @db.VarChar(255)
+  otp       String? @db.VarChar(255)
+
+  @@unique([uid])
+  @@unique([username])
+  @@unique([email])
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  nm_category String
+  products    Product[]
+}
+
+model Product {
+  id         Int      @id @default(autoincrement())
+  nm_product String
+  desc       String
+  price      Int
+  thumbnail  String?
+  url        String?
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+}
