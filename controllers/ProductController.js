@@ -1,15 +1,19 @@
+import { readFileSync } from "fs";
+import fs from "fs/promises";
+import { type } from "os";
 
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { PrismaClient } from "@prisma/client";
-import ServiceAccount from "../lib/akunFirebase.json" assert { type: "json" };
-const prisma = new PrismaClient();
-const MAX_FILE_SIZE_MB = 5;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-import { readFileSync } from "fs";
-import fs from "fs/promises";
-import { type } from "os";
+const serviceAccountRaw = readFileSync(
+  join(__dirname, "../lib/akunFirebase.json"),
+  "utf-8"
+);
+const ServiceAccount = JSON.parse(serviceAccountRaw);
+const prisma = new PrismaClient();
+const MAX_FILE_SIZE_MB = 5;
 
 import pkg from "firebase-admin";
 pkg.initializeApp({
