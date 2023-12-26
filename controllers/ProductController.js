@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import pkg from "firebase-admin";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { PrismaClient } from "@prisma/client";
@@ -10,13 +10,13 @@ const __dirname = dirname(__filename);
 import { readFileSync } from "fs";
 import fs from "fs/promises";
 import { type } from "os";
-
-admin.initializeApp({
-  credential: admin.credential.cert(ServiceAccount),
+const { admin } = pkg;
+pkg.initializeApp({
+  credential: pkg.credential.cert(ServiceAccount),
   storageBucket: "ac-service-34683.appspot.com",
 });
 
-const bucket = admin.storage().bucket();
+const bucket = pkg.storage().bucket();
 
 export const createProduct = async (req, res) => {
   try {
@@ -61,23 +61,22 @@ export const createProduct = async (req, res) => {
     const thumbnailFileFirebase = bucket.file(thumbnailFilePath);
 
     function generateRandomUID(length) {
-      const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let uid = '';
-     
-    
+      const charset =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let uid = "";
+
       for (let i = 0; i < length; i++) {
         const randomIndex = Math.floor(Math.random() * charset.length);
         uid += charset[randomIndex];
       }
-    
+
       return uid;
     }
     const uid = generateRandomUID(16);
-    
 
     await thumbnailFileFirebase.save(thumbnailFileBuffer, {
       metadata: {
-        contentType: "image/jpeg", 
+        contentType: "image/jpeg",
       },
     });
 
