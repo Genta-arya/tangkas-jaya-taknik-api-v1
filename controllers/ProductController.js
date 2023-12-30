@@ -18,7 +18,7 @@ const serviceAccountRaw = {
   type: process.env.FIREBASE_CONFIG_TYPE,
   project_id: process.env.FIREBASE_CONFIG_PROJECT_ID,
   private_key_id: process.env.FIREBASE_CONFIG_PRIVATE_KEY_ID,
-  private_key: process.env.FIREBASE_CONFIG_PRIVATE_KEY.replace(/\\n/g, "\n"), // Replace escaped newline characters
+  private_key: process.env.FIREBASE_CONFIG_PRIVATE_KEY, // Replace escaped newline characters
   client_email: process.env.FIREBASE_CONFIG_CLIENT_EMAIL,
   client_id: process.env.FIREBASE_CONFIG_CLIENT_ID,
   auth_uri: process.env.FIREBASE_CONFIG_AUTH_URI,
