@@ -15,7 +15,7 @@ dotenv.config();
 //   "utf-8"
 // );
 
-const formattedPrivateKey = process.env.FIREBASE_CONFIG_PRIVATE_KEY.replace(/\\n/g, '\n');
+const formattedPrivateKey = process.env.FIREBASE_CONFIG_PRIVATE_KEY;
 const serviceAccountRaw = {
   type: process.env.FIREBASE_CONFIG_TYPE,
   project_id: process.env.FIREBASE_CONFIG_PROJECT_ID,
