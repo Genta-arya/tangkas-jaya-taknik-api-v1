@@ -1,23 +1,40 @@
 import { readFileSync } from "fs";
 import fs from "fs/promises";
 import { type } from "os";
-
+import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { PrismaClient } from "@prisma/client";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const serviceAccountRaw = readFileSync(
-  join(__dirname, "../lib/akunFirebase.json"),
-  "utf-8"
-);
-const ServiceAccount = JSON.parse(serviceAccountRaw);
+
+dotenv.config();
+
+// const serviceAccountRaw = readFileSync(
+//   join(__dirname, "../lib/akunFirebase.json"),
+//   "utf-8"
+// );
+const serviceAccountRaw = {
+  type: process.env.FIREBASE_CONFIG_TYPE,
+  project_id: process.env.FIREBASE_CONFIG_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_CONFIG_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_CONFIG_PRIVATE_KEY.replace(/\\n/g, "\n"), // Replace escaped newline characters
+  client_email: process.env.FIREBASE_CONFIG_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CONFIG_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_CONFIG_AUTH_URI,
+  token_uri: process.env.FIREBASE_CONFIG_TOKEN_URI,
+  auth_provider_x509_cert_url:
+    process.env.FIREBASE_CONFIG_AUTH_PROVIDER_X509_CERT_URL,
+  client_x509_cert_url: process.env.FIREBASE_CONFIG_CLIENT_X509_CERT_URL,
+  universe_domain: process.env.FIREBASE_CONFIG_UNIVERSE_DOMAIN,
+};
+// const ServiceAccount = JSON.parse(serviceAccountRaw);
 const prisma = new PrismaClient();
 const MAX_FILE_SIZE_MB = 5;
 
 import pkg from "firebase-admin";
 pkg.initializeApp({
-  credential: pkg.credential.cert(ServiceAccount),
+  credential: pkg.credential.cert(serviceAccountRaw),
   storageBucket: "ac-service-34683.appspot.com",
 });
 
