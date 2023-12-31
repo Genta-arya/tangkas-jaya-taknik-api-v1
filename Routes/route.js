@@ -27,7 +27,10 @@ router.post("/login", HandleLogin);
 router.get("/checkJwt", checkJwt);
 router.post("/logout", logout);
 router.post("/create-category", createCategory);
+router.get("/category",ProductController.getAllCategory)
 router.post("/create-product", createProduct);
+router.put("/edit-product",ProductController.editProduct)
+router.delete('/products/:id', ProductController.deleteProduct)
 router.get("/product", getAllProduct);
 router.get("/history/:username", getHistory);
 router.post("/comment",postComment)

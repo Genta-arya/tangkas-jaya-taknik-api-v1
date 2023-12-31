@@ -43,6 +43,7 @@ model Auth {
   username  String   @db.VarChar(255) @unique
   email     String   @db.VarChar(255) @unique
   password  String   @db.VarChar(255)
+  role String?  @db.VarChar(255)
   token_jwt String?  @db.VarChar(255)
   otp       String?  @db.VarChar(255)
   comments  Comment[]

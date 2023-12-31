@@ -41,6 +41,7 @@ CREATE TABLE `Auth` (
     `username` VARCHAR(255) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
+    `role` VARCHAR(255) NULL,
     `token_jwt` VARCHAR(255) NULL,
     `otp` VARCHAR(255) NULL,
 
