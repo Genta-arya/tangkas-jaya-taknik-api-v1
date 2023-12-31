@@ -39,17 +39,27 @@ model Location {
 }
 
 model Auth {
-  uid       Int     @id @default(autoincrement())
-  username  String  @db.VarChar(255)
-  email     String  @db.VarChar(255)
-  password  String  @db.VarChar(255)
-  token_jwt String? @db.VarChar(255)
-  otp       String? @db.VarChar(255)
+  uid       Int      @id @default(autoincrement())
+  username  String   @db.VarChar(255) @unique
+  email     String   @db.VarChar(255) @unique
+  password  String   @db.VarChar(255)
+  token_jwt String?  @db.VarChar(255)
+  otp       String?  @db.VarChar(255)
+  comments  Comment[]
 
   @@unique([uid])
-  @@unique([username])
-  @@unique([email])
 }
+
+model Comment {
+  id     Int    @id @default(autoincrement())
+  uid    Int
+  review String
+  rating Int
+  user   Auth   @relation(fields: [uid], references: [uid])
+ createdAt  DateTime @default(now()) 
+  @@index([uid], name: "user_id")
+}
+
 
 model Category {
   id          Int       @id @default(autoincrement())

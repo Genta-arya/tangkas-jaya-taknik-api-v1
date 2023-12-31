@@ -11,6 +11,7 @@ import { getHistory } from "../controllers/HistoryController.js";
 
 
 import * as ProductController from "../controllers/ProductController.js";
+import { getAllComment, postComment } from "../controllers/CommentController.js";
 const { createCategory, createProduct, getAllProduct } = ProductController;
 
 const router = express.Router();
@@ -29,5 +30,6 @@ router.post("/create-category", createCategory);
 router.post("/create-product", createProduct);
 router.get("/product", getAllProduct);
 router.get("/history/:username", getHistory);
-
+router.post("/comment",postComment)
+router.get("/comment",getAllComment)
 export default router;

@@ -44,10 +44,22 @@ CREATE TABLE `Auth` (
     `token_jwt` VARCHAR(255) NULL,
     `otp` VARCHAR(255) NULL,
 
-    UNIQUE INDEX `Auth_uid_key`(`uid`),
     UNIQUE INDEX `Auth_username_key`(`username`),
     UNIQUE INDEX `Auth_email_key`(`email`),
+    UNIQUE INDEX `Auth_uid_key`(`uid`),
     PRIMARY KEY (`uid`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Comment` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `uid` INTEGER NOT NULL,
+    `review` VARCHAR(191) NOT NULL,
+    `rating` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `user_id`(`uid`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -76,6 +88,9 @@ ALTER TABLE `OrderDetails` ADD CONSTRAINT `OrderDetails_orderId_fkey` FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE `Location` ADD CONSTRAINT `Location_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Comment` ADD CONSTRAINT `Comment_uid_fkey` FOREIGN KEY (`uid`) REFERENCES `Auth`(`uid`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Product` ADD CONSTRAINT `Product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
