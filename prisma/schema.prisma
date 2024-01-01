@@ -24,8 +24,9 @@ model OrderDetails {
   price      Int
   status     String
   url        String?
+  telp       String?
   orderId    Int      @unique
-  createdAt  DateTime @default(now()) 
+  createdAt  DateTime @default(now())
   order      Order    @relation(fields: [orderId], references: [id])
 }
 
@@ -39,28 +40,28 @@ model Location {
 }
 
 model Auth {
-  uid       Int      @id @default(autoincrement())
-  username  String   @db.VarChar(255) @unique
-  email     String   @db.VarChar(255) @unique
-  password  String   @db.VarChar(255)
-  role String?  @db.VarChar(255)
-  token_jwt String?  @db.VarChar(255)
-  otp       String?  @db.VarChar(255)
+  uid       Int       @id @default(autoincrement())
+  username  String    @unique @db.VarChar(255)
+  email     String    @unique @db.VarChar(255)
+  password  String    @db.VarChar(255)
+  role      String?   @db.VarChar(255)
+  token_jwt String?   @db.VarChar(255)
+  otp       String?   @db.VarChar(255)
   comments  Comment[]
 
   @@unique([uid])
 }
 
 model Comment {
-  id     Int    @id @default(autoincrement())
-  uid    Int
-  review String
-  rating Int
-  user   Auth   @relation(fields: [uid], references: [uid])
- createdAt  DateTime @default(now()) 
+  id        Int      @id @default(autoincrement())
+  uid       Int
+  review    String
+  rating    Int
+  user      Auth     @relation(fields: [uid], references: [uid])
+  createdAt DateTime @default(now())
+
   @@index([uid], name: "user_id")
 }
-
 
 model Category {
   id          Int       @id @default(autoincrement())

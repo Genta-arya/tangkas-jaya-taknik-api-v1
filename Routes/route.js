@@ -28,6 +28,8 @@ router.get("/checkJwt", checkJwt);
 router.post("/logout", logout);
 router.post("/create-category", createCategory);
 router.get("/category",ProductController.getAllCategory)
+router.put("/category/:categoryId",ProductController.EditCategory)
+router.delete("/category/:categoryId",ProductController.DeleteCategory)
 router.post("/create-product", createProduct);
 router.put("/edit-product",ProductController.editProduct)
 router.delete('/products/:id', ProductController.deleteProduct)

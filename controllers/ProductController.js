@@ -47,12 +47,10 @@ export const editProduct = async (req, res) => {
     const { id, nm_product, desc, categoryId, price } = req.body;
     const productId = parseInt(id, 10);
 
-    // Validate id to ensure it's a number
     if (isNaN(productId)) {
       return res.status(400).json({ error: "ID produk harus berupa angka" });
     }
 
-    // Check if the product exists
     const existingProduct = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -61,61 +59,84 @@ export const editProduct = async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
-    // Validate and parse price
     const priceValue = parseInt(price, 10);
     if (isNaN(priceValue)) {
       return res.status(400).json({ error: "Price harus berupa angka" });
     }
 
-    // Validate thumbnail size
-    const thumbnailFile = req.files.thumbnail;
-    console.log(thumbnailFile);
-    const fileSizeInBytes = thumbnailFile.size;
-    const fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+    const thumbnailFile = req.files?.thumbnail;
 
-    function sanitizeFileName(input) {
-      return input.replace(/[^a-zA-Z0-9_-]/g, "_");
+    if (thumbnailFile) {
+      const fileSizeInBytes = thumbnailFile.size;
+      const fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+
+      function sanitizeFileName(input) {
+        return input.replace(/[^a-zA-Z0-9_-]/g, "_");
+      }
+
+      const sanitizedNmProduct = sanitizeFileName(nm_product);
+      const thumbnailFileName = `image_${sanitizedNmProduct}_thumbnail.jpg`;
+
+      const thumbnailFileBuffer = thumbnailFile.data;
+      const thumbnailFilePath = `Images/${thumbnailFileName}`;
+      const thumbnailFileFirebase = bucket.file(thumbnailFilePath);
+
+      await thumbnailFileFirebase.save(thumbnailFileBuffer, {
+        metadata: {
+          contentType: "image/jpeg",
+        },
+      });
+
+      const thumbnailURL = `https://firebasestorage.googleapis.com/v0/b/ac-service-34683.appspot.com/o/${encodeURIComponent(
+        thumbnailFilePath
+      )}?alt=media`;
+
+      const categoryIdValue = parseInt(categoryId, 10);
+
+      const updatedProductData = {
+        nm_product,
+        desc,
+        price: priceValue,
+        categoryId: categoryIdValue,
+        thumbnail: thumbnailFileName,
+        url: thumbnailURL,
+      };
+
+      const updatedProduct = await prisma.product.update({
+        where: { id: productId },
+        data: updatedProductData,
+      });
+
+      return res.status(200).json({
+        product: { ...updatedProduct, url: thumbnailURL },
+        message: "success",
+        status: 200,
+      });
+    } else {
+      // If no thumbnail file provided, use the existing thumbnail information
+      const categoryIdValue = parseInt(categoryId, 10);
+
+      const updatedProductData = {
+        nm_product,
+        desc,
+        price: priceValue,
+        categoryId: categoryIdValue,
+        // Retain the existing thumbnail information
+        thumbnail: existingProduct.thumbnail || null,
+        url: existingProduct.url || null,
+      };
+
+      const updatedProduct = await prisma.product.update({
+        where: { id: productId },
+        data: updatedProductData,
+      });
+
+      return res.status(200).json({
+        product: updatedProduct,
+        message: "success",
+        status: 200,
+      });
     }
-
-    const sanitizedNmProduct = sanitizeFileName(nm_product);
-    const thumbnailFileName = `image_${sanitizedNmProduct}_thumbnail.jpg`;
-    console.log(thumbnailFileName);
-
-    const thumbnailFileBuffer = thumbnailFile.data;
-    const thumbnailFilePath = `Images/${thumbnailFileName}`;
-    const thumbnailFileFirebase = bucket.file(thumbnailFilePath);
-
-    await thumbnailFileFirebase.save(thumbnailFileBuffer, {
-      metadata: {
-        contentType: "image/jpeg",
-      },
-    });
-
-    const thumbnailURL = `https://firebasestorage.googleapis.com/v0/b/ac-service-34683.appspot.com/o/${encodeURIComponent(
-      thumbnailFilePath
-    )}?alt=media`;
-
-    const categoryIdValue = parseInt(categoryId, 10);
-
-    const updatedProductData = {
-      nm_product,
-      desc,
-      price: priceValue,
-      categoryId: categoryIdValue,
-      thumbnail: thumbnailFileName,
-      url: thumbnailURL,
-    };
-
-    const updatedProduct = await prisma.product.update({
-      where: { id: productId },
-      data: updatedProductData,
-    });
-
-    return res.status(200).json({
-      product: { ...updatedProduct, url: thumbnailURL },
-      message: "success",
-      status: 200,
-    });
   } catch (error) {
     console.error("Error editing product:", error);
     return res.status(500).json({
@@ -369,6 +390,56 @@ export const getAllCategory = async (req, res) => {
   }
 };
 
+export const EditCategory = async (req, res) => {
+  const { categoryId } = req.params;
+  const { nm_category } = req.body;
+
+  try {
+    const updatedCategory = await prisma.category.update({
+      where: { id: parseInt(categoryId) },
+      data: {
+        nm_category,
+      },
+    });
+
+    res.status(200).json(updatedCategory);
+  } catch (error) {
+    console.error("Error updating category:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const DeleteCategory = async (req, res) => {
+  const { categoryId } = req.params;
+
+  try {
+    // Temukan kategori berdasarkan ID
+    const category = await prisma.category.findUnique({
+      where: {
+        id: parseInt(categoryId),
+      },
+    });
+
+    // Jika kategori tidak ditemukan, kirim respons 404
+    if (!category) {
+      return res.status(404).json({ message: "Kategori tidak ditemukan" });
+    }
+
+    // Hapus kategori
+    await prisma.category.delete({
+      where: {
+        id: parseInt(categoryId),
+      },
+    });
+
+    // Kirim respons sukses
+    res.status(200).json({ message: "Kategori berhasil dihapus" });
+  } catch (error) {
+    console.error(error);
+    // Kirim respons error server
+    res.status(500).json({ message: "Terjadi kesalahan server" });
+  }
+};
 
 export const deleteProduct = async (req, res) => {
   const { id } = req.params;
@@ -380,10 +451,14 @@ export const deleteProduct = async (req, res) => {
       },
     });
 
-    res.status(200).json({ product: deletedProduct, message: 'Product deleted successfully', status: 200 });
+    res.status(200).json({
+      product: deletedProduct,
+      message: "Product deleted successfully",
+      status: 200,
+    });
   } catch (error) {
-    console.error('Error deleting product:', error);
-    res.status(500).json({ message: 'Internal server error', status: 500 });
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Internal server error", status: 500 });
   } finally {
     await prisma.$disconnect();
   }
