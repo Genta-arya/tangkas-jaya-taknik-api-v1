@@ -10,6 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const prisma = new PrismaClient();
 dotenv.config();
+const MAX_FILE_SIZE_MB = 5;
 
 // const serviceAccountRaw = readFileSync(
 //   join(__dirname, "../lib/akunFirebase.json"),
