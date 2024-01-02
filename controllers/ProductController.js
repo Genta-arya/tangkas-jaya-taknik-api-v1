@@ -5,9 +5,10 @@ import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { PrismaClient } from "@prisma/client";
+import { firebase, bucket } from "../lib/Firebase.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
+const prisma = new PrismaClient();
 dotenv.config();
 
 // const serviceAccountRaw = readFileSync(
@@ -15,33 +16,6 @@ dotenv.config();
 //   "utf-8"
 // );
 
-const formattedPrivateKey = process.env.FIREBASE_CONFIG_PRIVATE_KEY;
-const serviceAccountRaw = {
-  type: process.env.FIREBASE_CONFIG_TYPE,
-  project_id: process.env.FIREBASE_CONFIG_PROJECT_ID,
-  private_key_id: process.env.FIREBASE_CONFIG_PRIVATE_KEY_ID,
-  private_key: formattedPrivateKey, // Replace escaped newline characters
-  client_email: process.env.FIREBASE_CONFIG_CLIENT_EMAIL,
-  client_id: process.env.FIREBASE_CONFIG_CLIENT_ID,
-  auth_uri: process.env.FIREBASE_CONFIG_AUTH_URI,
-  token_uri: process.env.FIREBASE_CONFIG_TOKEN_URI,
-  auth_provider_x509_cert_url:
-    process.env.FIREBASE_CONFIG_AUTH_PROVIDER_X509_CERT_URL,
-  client_x509_cert_url: process.env.FIREBASE_CONFIG_CLIENT_X509_CERT_URL,
-  universe_domain: process.env.FIREBASE_CONFIG_UNIVERSE_DOMAIN,
-};
-// const ServiceAccount = JSON.parse(serviceAccountRaw);
-
-const prisma = new PrismaClient();
-const MAX_FILE_SIZE_MB = 5;
-
-import pkg from "firebase-admin";
-pkg.initializeApp({
-  credential: pkg.credential.cert(serviceAccountRaw),
-  storageBucket: "ac-service-34683.appspot.com",
-});
-
-const bucket = pkg.storage().bucket();
 export const editProduct = async (req, res) => {
   try {
     const { id, nm_product, desc, categoryId, price } = req.body;

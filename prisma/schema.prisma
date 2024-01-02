@@ -18,6 +18,7 @@ model Order {
 
 model OrderDetails {
   id         Int      @id @default(autoincrement())
+  username String?
   name       String
   nm_product String
   qty        Int
