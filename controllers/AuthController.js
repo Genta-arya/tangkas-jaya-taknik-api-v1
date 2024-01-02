@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { generateJWTToken } from "../lib/index.js";
 import jwt from "jsonwebtoken";
-
+import nodemailer from "nodemailer";
 const prisma = new PrismaClient();
 
 export const HandleRegister = async (req, res) => {
@@ -113,6 +113,62 @@ export const HandleLogin = async (req, res) => {
   }
 };
 
+export const handleGoogleLogin = async (req, res) => {
+  try {
+    const userData = req.body;
+
+    const existingUser = await prisma.auth.findUnique({
+      where: { email: userData.email },
+    });
+
+    if (existingUser) {
+      const newToken = generateJWTToken(existingUser);
+      await prisma.auth.update({
+        where: { uid: existingUser.uid },
+        data: { token_jwt: newToken },
+      });
+
+      return res.status(200).json({
+        success: true,
+        token: newToken,
+        username: existingUser.username,
+        role: existingUser.role,
+        email: existingUser.email,
+      });
+    } else {
+      const newUser = await prisma.auth.create({
+        data: {
+          username: userData.username,
+          email: userData.email,
+
+          password: userData.password || "",
+          role: "user",
+          token_jwt: generateJWTToken({
+            username: userData.username,
+            email: userData.email,
+          }),
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        token: newUser.token_jwt,
+        username: newUser.username,
+        role: newUser.role,
+        email: newUser.email,
+      });
+    }
+  } catch (error) {
+    console.error("Error saving Google user data:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
 export const getUserRoleByUsername = async (username) => {
   try {
     const user = await prisma.auth.findUnique({
@@ -165,9 +221,180 @@ export const logout = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Logout successful" });
   } catch (error) {
-    console.error("Error during logout:", error);
+    console.log("Error during logout:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
   } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "putrabahari1006@gmail.com",
+    pass: "taletpsmoesjdjfq",
+  },
+});
+
+export const sendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const existingUser = await prisma.auth.findUnique({
+      where: { email },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ error: "Email not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await prisma.auth.update({
+      where: { email },
+      data: { otp },
+    });
+
+    const mailOptions = {
+      from: "tangkas_jaya_teknik@gmail.com",
+      to: email,
+      subject: "Your OTP for Reset Password",
+      html: `
+      <html>
+        <head>
+          <style>
+            /* Tambahkan CSS kustom Anda di sini */
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f0f0f0;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+              background-color: #ffffff;
+            }
+            .header {
+              background-color: #007BFF;
+              color: #ffffff;
+              padding: 10px 0;
+              text-align: center;
+            }
+            .content {
+              padding: 20px;
+            }
+            .footer {
+              background-color: #007BFF;
+              color: #ffffff;
+              padding: 10px 0;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Reset Password</h1>
+            </div>
+            <div class="content">
+              <p>Halo,</p>
+              <p>Anda telah meminta untuk mereset password Anda. Gunakan token berikut untuk mereset password:</p>
+              <p><strong>Token:</strong> ${otp}</p>
+              <p>Jika Anda tidak melakukan permintaan ini, silakan abaikan email ini.</p>
+              <p>Salam,</p>
+              <p>Terima Kasih</p>
+            </div>
+            <div class="footer">
+              &copy; ${new Date().getFullYear()} Tangkas Jaya Teknik
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP generated and sent successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const verifOTP = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    const auth = await prisma.auth.findFirst({
+      where: {
+        otp: {
+          equals: otp,
+        },
+      },
+      select: {
+        email: true,
+      },
+    });
+
+    if (auth) {
+      return res.status(200).json({ email: auth.email });
+    } else {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+  } catch (error) {
+    if (error.code === "P2025") {
+      console.error("Prisma Error:", error.message);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+export const changePassowrd = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // Temukan pengguna berdasarkan alamat email
+    const user = await prisma.auth.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    // Periksa apakah pengguna ditemukan
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash kata sandi baru sebelum menyimpannya
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Perbarui kata sandi pengguna
+    await prisma.auth.update({
+      where: {
+        email: email,
+      },
+      data: {
+        password: hashedPassword,
+        otp: null, // Jika Anda ingin menghapus OTP setelah mengganti kata sandi
+      },
+    });
+
+    return res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Change Password Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  } finally {
+    // Tutup koneksi PrismaClient setelah selesai
     await prisma.$disconnect();
   }
 };

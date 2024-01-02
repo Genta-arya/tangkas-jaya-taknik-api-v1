@@ -18,7 +18,7 @@ model Order {
 
 model OrderDetails {
   id         Int      @id @default(autoincrement())
-  username String?
+  username   String?
   name       String
   nm_product String
   qty        Int
@@ -47,7 +47,7 @@ model Auth {
   password  String    @db.VarChar(255)
   role      String?   @db.VarChar(255)
   token_jwt String?   @db.VarChar(255)
-  otp       String?   @db.VarChar(255)
+  otp       String?
   comments  Comment[]
 
   @@unique([uid])
