@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { PrismaClient } from "@prisma/client";
 import { firebase, bucket } from "../lib/Firebase.js";
+import { createClient } from "@supabase/supabase-js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const prisma = new PrismaClient();
@@ -16,6 +17,16 @@ const MAX_FILE_SIZE_MB = 5;
 //   join(__dirname, "../lib/akunFirebase.json"),
 //   "utf-8"
 // );
+
+const supabaseUrl = "https://sdkexwoqifhcvqxulubc.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNka2V4d29xaWZoY3ZxeHVsdWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDMwNDQxNDEsImV4cCI6MjAxODYyMDE0MX0.C-BFLEgkQwgXw45hRX3C1nTKWuMTWkPgdu4HtMsu9wA";
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  // Konfigurasi untuk WebSocket
+  websocketUrl: `wss://${"sdkexwoqifhcvqxulubc"}.supabase.co/socket`,
+  // Akun anonim (optional, tergantung pada kebijakan keamanan)
+  // apiKey: 'your_anonymous_api_key',
+});
 
 export const editProduct = async (req, res) => {
   try {
