@@ -23,6 +23,7 @@ import {
   getAllComment,
   postComment,
 } from "../controllers/CommentController.js";
+import { sendEmail } from "../controllers/EmailController.js";
 const { createCategory, createProduct, getAllProduct } = ProductController;
 
 const router = express.Router();
@@ -54,4 +55,5 @@ router.post("/send-otp", sendOTP);
 router.post("/verify", verifOTP);
 router.get("/notifications/:username", getNotifications);
 router.post("/change-password", changePassowrd);
+router.post('/send-email',sendEmail)
 export default router;
