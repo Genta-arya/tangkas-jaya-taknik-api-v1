@@ -155,7 +155,7 @@ export const sendEmail = async (req, res) => {
                 <!-- Add more order details as needed -->
               </table>
             </div>
-            <a href="http://localhost:3000/admin/dashboard" class="cta-button">
+            <a href="https://www.tangkasjayateknik.site/admin/dashboard" class="cta-button">
               Lihat Pesanan
             </a>
             <p>Salam,</p>
