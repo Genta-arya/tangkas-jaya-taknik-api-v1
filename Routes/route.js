@@ -56,4 +56,5 @@ router.post("/verify", verifOTP);
 router.get("/notifications/:username", getNotifications);
 router.post("/change-password", changePassowrd);
 router.post('/send-email',sendEmail)
+router.get('/notifikasi/:username',getNotifications)
 export default router;
