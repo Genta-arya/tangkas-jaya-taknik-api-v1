@@ -67,7 +67,11 @@ export const getAllOrders = async (req, res) => {
 
     const orders = await prisma.order.findMany({
       include: {
-        orderDetails: true,
+        orderDetails: {
+          include: {
+            images: true, // Assuming "images" is the field within orderDetails that refers to the images
+          },
+        },
         location: true,
       },
       skip: (page - 1) * perPage,

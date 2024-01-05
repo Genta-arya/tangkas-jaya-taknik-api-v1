@@ -16,13 +16,14 @@ export const getHistory = async (req, res) => {
         include: {
           orderDetails: true,
           location: true,
+          images:true,
         },
       });
 
       res.json({
         orders,
-        currentPage: 0, // Set currentPage to 0 to indicate all data
-        totalPages: 1, // Set totalPages to 1 as there is no pagination
+        currentPage: 0, 
+        totalPages: 1, 
       });
     } catch (error) {
       console.error("Error retrieving orders:", error);
@@ -40,6 +41,7 @@ export const getHistory = async (req, res) => {
         include: {
           orderDetails: true,
           location: true,
+          images:true,
         },
         skip: skip,
         take: parseInt(perPage),
@@ -64,3 +66,5 @@ export const getHistory = async (req, res) => {
     }
   }
 };
+
+

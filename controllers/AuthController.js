@@ -88,7 +88,7 @@ export const HandleLogin = async (req, res) => {
       where: { username: user.username },
       data: { token_jwt: newToken },
     });
-    console.log(newToken);
+  
 
     res.status(200).json({
       status: 200,
@@ -221,7 +221,7 @@ export const logout = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Logout successful" });
   } catch (error) {
-    console.log("Error during logout:", error);
+   
     res.status(500).json({ success: false, error: "Internal Server Error" });
   } finally {
     await prisma.$disconnect();

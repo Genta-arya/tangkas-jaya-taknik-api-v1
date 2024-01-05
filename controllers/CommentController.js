@@ -10,7 +10,7 @@ export const postComment = async (req, res) => {
         const user = await prisma.auth.findUnique({
           where: { username: String(username) },
         });
-        console.log(username)
+   
     
         if (!user) {
           return res.status(404).json({ error: "User not found" });

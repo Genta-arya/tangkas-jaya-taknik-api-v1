@@ -174,7 +174,7 @@ export const sendEmail = async (req, res) => {
     // Send the email
     const info = await transporter.sendMail(mailOptions);
 
-    console.log("Email sent: " + info.response);
+   
 
     // Respond to the client
     res.status(200).json({ success: true, message: "Email sent successfully" });

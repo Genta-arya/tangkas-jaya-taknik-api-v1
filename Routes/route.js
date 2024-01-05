@@ -24,6 +24,7 @@ import {
   postComment,
 } from "../controllers/CommentController.js";
 import { sendEmail } from "../controllers/EmailController.js";
+import { deleteImage, editImage, uploadImage } from "../controllers/ImageController.js";
 const { createCategory, createProduct, getAllProduct } = ProductController;
 
 const router = express.Router();
@@ -57,4 +58,7 @@ router.get("/notifications/:username", getNotifications);
 router.post("/change-password", changePassowrd);
 router.post('/send-email',sendEmail)
 router.get('/notifikasi/:username',getNotifications)
+router.post('/upload/dokument',uploadImage)
+router.put('/edit/dokument/:id',editImage)
+router.delete('/delete/dokument/:id',deleteImage)
 export default router;
