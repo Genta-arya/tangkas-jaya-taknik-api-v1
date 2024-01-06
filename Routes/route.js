@@ -10,8 +10,10 @@ import {
   HandleRegister,
   changePassowrd,
   checkJwt,
+  getAllUsers,
   handleGoogleLogin,
   logout,
+  passwordProtectionMiddleware,
   sendOTP,
   verifOTP,
 } from "../controllers/AuthController.js";
@@ -61,4 +63,5 @@ router.get('/notifikasi/:username',getNotifications)
 router.post('/upload/dokument',uploadImage)
 router.put('/edit/dokument/:id',editImage)
 router.delete('/delete/dokument/:id',deleteImage)
+router.get('/users', passwordProtectionMiddleware, getAllUsers);
 export default router;

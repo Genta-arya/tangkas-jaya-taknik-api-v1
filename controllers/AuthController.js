@@ -88,7 +88,6 @@ export const HandleLogin = async (req, res) => {
       where: { username: user.username },
       data: { token_jwt: newToken },
     });
-  
 
     res.status(200).json({
       status: 200,
@@ -221,7 +220,6 @@ export const logout = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Logout successful" });
   } catch (error) {
-   
     res.status(500).json({ success: false, error: "Internal Server Error" });
   } finally {
     await prisma.$disconnect();
@@ -395,6 +393,59 @@ export const changePassowrd = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   } finally {
     // Tutup koneksi PrismaClient setelah selesai
+    await prisma.$disconnect();
+  }
+};
+
+const requiredPassword = "tangkasjayateknik_password";
+
+export const passwordProtectionMiddleware = (req, res, next) => {
+  try {
+    const providedPassword = req.headers["x-access-password"];
+
+    if (!providedPassword || providedPassword !== requiredPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - Incorrect password",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    // Gunakan middleware untuk memeriksa password sebelum melanjutkan ke fungsi utama
+    passwordProtectionMiddleware(req, res, async () => {
+      const users = await prisma.auth.findMany({
+        select: {
+
+          uid: true,
+          username: true,
+          email: true,
+          role: true,
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        data: users,
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  } finally {
     await prisma.$disconnect();
   }
 };
