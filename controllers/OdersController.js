@@ -76,14 +76,30 @@ export const submitOrder = async (req, res) => {
   }
 };
 export const getAllOrders = async (req, res) => {
-  const page = req.query.page ? parseInt(req.query.page) : 1;
-  const perPage =10; // Jumlah item per halaman
+  const page = parseInt(req.query.page) || 1;
+  const perPage = parseInt(req.query.perPage) || 2;
+  const q = req.query.q || "";
+
+  let whereClause = {};
+
+  if (q) {
+    whereClause = {
+   
+      username: {
+        contains: q,
+        mode: 'insensitive', 
+      },
+    };
+  }
 
   try {
-    const totalOrders = await prisma.order.count();
+    const totalOrders = await prisma.order.count({
+      where: whereClause,
+    });
     const totalPages = Math.ceil(totalOrders / perPage);
 
     const orders = await prisma.order.findMany({
+      where: whereClause,
       include: {
         orderDetails: {
           include: {
@@ -99,7 +115,7 @@ export const getAllOrders = async (req, res) => {
     if (orders.length === 0) {
       return res.status(404).json({
         success: false,
-        error: "No orders found for the given page",
+        error: "No orders found for the given search and page",
         status: 404,
       });
     }
@@ -107,9 +123,11 @@ export const getAllOrders = async (req, res) => {
     const ordersJSON = {
       success: true,
       data: orders,
+      item : perPage,
       status: 200,
-      currentPage: page, // Menambahkan nomor halaman saat ini
+      currentPage: page,
       totalPages,
+      totalRows: totalOrders,
     };
 
     res.status(200).json(ordersJSON);
@@ -129,6 +147,11 @@ export const getAllOrders = async (req, res) => {
     }
   }
 };
+
+
+
+
+
 
 export const updateStatus = async (req, res) => {
   try {
