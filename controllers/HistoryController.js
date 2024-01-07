@@ -68,3 +68,28 @@ export const getHistory = async (req, res) => {
 };
 
 
+
+export const searchByUsername = async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        username: {
+          contains: username,
+          mode: 'insensitive', // Case-insensitive search
+        },
+      },
+      include: {
+        orderDetails: true,
+        location: true,
+        images: true,
+      },
+    });
+
+    res.json({ orders });
+  } catch (error) {
+    console.error('Error searching orders by username:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};

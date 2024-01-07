@@ -17,12 +17,29 @@ export const submitOrder = async (req, res) => {
 
     const formattedPrice = parseInt(price);
 
+    const generateRandomServiceId = () => {
+      const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      const idLength = 5;
+
+      let randomId = "service_";
+
+      for (let i = 0; i < idLength; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomId += characters.charAt(randomIndex);
+      }
+
+      return randomId;
+    };
+
     const order = await prisma.order.create({
       data: {
         uid,
         username,
         orderDetails: {
           create: {
+            uuid: generateRandomServiceId(),
+
             nm_product,
             qty,
             username: username,
@@ -31,6 +48,7 @@ export const submitOrder = async (req, res) => {
             url,
             telp,
             status: "pending",
+            ket: "-",
           },
         },
         location: {
@@ -59,7 +77,7 @@ export const submitOrder = async (req, res) => {
 };
 export const getAllOrders = async (req, res) => {
   const page = req.query.page ? parseInt(req.query.page) : 1;
-  const perPage = 5; // Jumlah item per halaman
+  const perPage =10; // Jumlah item per halaman
 
   try {
     const totalOrders = await prisma.order.count();

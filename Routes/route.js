@@ -18,7 +18,7 @@ import {
   verifOTP,
 } from "../controllers/AuthController.js";
 
-import { getHistory } from "../controllers/HistoryController.js";
+import { getHistory, searchByUsername } from "../controllers/HistoryController.js";
 
 import * as ProductController from "../controllers/ProductController.js";
 import {
@@ -64,4 +64,5 @@ router.post('/upload/dokument',uploadImage)
 router.put('/edit/dokument/:id',editImage)
 router.delete('/delete/dokument/:id',deleteImage)
 router.get('/users', passwordProtectionMiddleware, getAllUsers);
+router.get('/search/:username',searchByUsername)
 export default router;
