@@ -293,22 +293,22 @@ export const chartData = async (req, res) => {
       },
     });
 
-    // Mengelompokkan pesanan berdasarkan tanggal pembuatan
-    const ordersGroupedByDate = completedOrders.reduce((acc, order) => {
-      const date = order.createdAt.toISOString().split('T')[0];
-      acc[date] = acc[date] || [];
-      acc[date].push(order);
+    // Mengelompokkan pesanan berdasarkan bulan pembuatan
+    const ordersGroupedByMonth = completedOrders.reduce((acc, order) => {
+      const month = order.createdAt.toISOString().split('-').slice(0, 2).join('-');
+      acc[month] = acc[month] || [];
+      acc[month].push(order);
       return acc;
     }, {});
 
-    // Menghitung total penghasilan per hari
-    const dailyEarnings = Object.keys(ordersGroupedByDate).map((date) => {
-      const orders = ordersGroupedByDate[date];
+    // Menghitung total penghasilan per bulan
+    const monthlyEarnings = Object.keys(ordersGroupedByMonth).map((month) => {
+      const orders = ordersGroupedByMonth[month];
       const totalEarnings = orders.reduce((acc, order) => acc + order.price, 0);
-      return { date, totalEarnings };
+      return { month, totalEarnings };
     });
 
-    res.json({ dailyEarnings });
+    res.json({ monthlyEarnings });
   } catch (error) {
     console.error("Error fetching chart data:", error);
     res.status(500).json({ error: "Internal Server Error" });
