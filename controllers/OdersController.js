@@ -77,7 +77,7 @@ export const submitOrder = async (req, res) => {
 };
 export const getAllOrders = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const perPage = parseInt(req.query.perPage) || 2;
+  const perPage = parseInt(req.query.perPage) || 10;
   const q = req.query.q || "";
 
   let whereClause = {};
