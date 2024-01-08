@@ -1,7 +1,9 @@
 import express from "express";
 import {
+  chartData,
   getAllOrders,
   getNotifications,
+  passwordMiddleware,
   submitOrder,
   updateStatus,
 } from "../controllers/OdersController.js";
@@ -69,4 +71,6 @@ router.get('/users', passwordProtectionMiddleware, getAllUsers);
 router.get('/search/:username',searchByUsername)
 router.post('/reset-password/:uid' , resetPassword)
 router.delete('/delete/:uid' , deleteUser)
+router.get('/chart', passwordMiddleware, chartData);
+
 export default router;

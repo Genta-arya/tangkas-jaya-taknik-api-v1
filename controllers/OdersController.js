@@ -84,10 +84,9 @@ export const getAllOrders = async (req, res) => {
 
   if (q) {
     whereClause = {
-   
       username: {
         contains: q,
-        mode: 'insensitive', 
+        mode: "insensitive",
       },
     };
   }
@@ -123,7 +122,7 @@ export const getAllOrders = async (req, res) => {
     const ordersJSON = {
       success: true,
       data: orders,
-      item : perPage,
+      item: perPage,
       status: 200,
       currentPage: page,
       totalPages,
@@ -147,11 +146,6 @@ export const getAllOrders = async (req, res) => {
     }
   }
 };
-
-
-
-
-
 
 export const updateStatus = async (req, res) => {
   try {
@@ -269,5 +263,56 @@ export const getNotifications = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Internal Server Error", status: 500 });
+  }
+};
+
+export const passwordMiddleware = (req, res, next) => {
+  const expectedPassword = 'tangkas'; // Change this to your desired password
+
+  const providedPassword = req.headers.authorization;
+
+  if (!providedPassword || providedPassword !== expectedPassword) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Password is correct, continue with the next middleware or route handler
+  next();
+};
+
+
+export const chartData = async (req, res) => {
+  try {
+    const completedOrders = await prisma.orderDetails.findMany({
+      where: { status: "selesai" },
+      include: {
+        order: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    // Mengelompokkan pesanan berdasarkan tanggal pembuatan
+    const ordersGroupedByDate = completedOrders.reduce((acc, order) => {
+      const date = order.createdAt.toISOString().split('T')[0];
+      acc[date] = acc[date] || [];
+      acc[date].push(order);
+      return acc;
+    }, {});
+
+    // Menghitung total penghasilan per hari
+    const dailyEarnings = Object.keys(ordersGroupedByDate).map((date) => {
+      const orders = ordersGroupedByDate[date];
+      const totalEarnings = orders.reduce((acc, order) => acc + order.price, 0);
+      return { date, totalEarnings };
+    });
+
+    res.json({ dailyEarnings });
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    await prisma.$disconnect(); // Menutup koneksi Prisma
   }
 };
