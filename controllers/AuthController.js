@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { generateJWTToken } from "../lib/index.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+
 const prisma = new PrismaClient();
 
 export const HandleRegister = async (req, res) => {
@@ -422,11 +423,9 @@ export const passwordProtectionMiddleware = (req, res, next) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    // Gunakan middleware untuk memeriksa password sebelum melanjutkan ke fungsi utama
     passwordProtectionMiddleware(req, res, async () => {
       const users = await prisma.auth.findMany({
         select: {
-
           uid: true,
           username: true,
           email: true,
@@ -445,6 +444,75 @@ export const getAllUsers = async (req, res) => {
       success: false,
       message: "Internal server error",
     });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { newPassword } = req.body;
+
+    const parsedUid = parseInt(uid);
+
+    const user = await prisma.auth.findUnique({
+      where: { uid: parsedUid },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+        status: 404,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.auth.update({
+      where: { uid: parsedUid },
+      data: { password: hashedPassword },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      status: 500,
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const parsedUid = parseInt(uid);
+
+    const user = await prisma.auth.findUnique({
+      where: { uid : parsedUid },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await prisma.auth.delete({
+      where: { uid : parsedUid},
+    });
+
+    return res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
   } finally {
     await prisma.$disconnect();
   }

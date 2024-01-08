@@ -10,6 +10,7 @@ CREATE TABLE "Order" (
 -- CreateTable
 CREATE TABLE "OrderDetails" (
     "id" SERIAL NOT NULL,
+    "uuid" TEXT,
     "username" TEXT,
     "name" TEXT NOT NULL,
     "nm_product" TEXT NOT NULL,
@@ -18,6 +19,7 @@ CREATE TABLE "OrderDetails" (
     "status" TEXT NOT NULL,
     "url" TEXT,
     "telp" TEXT,
+    "ket" TEXT,
     "orderId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

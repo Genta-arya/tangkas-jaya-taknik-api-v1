@@ -10,10 +10,12 @@ import {
   HandleRegister,
   changePassowrd,
   checkJwt,
+  deleteUser,
   getAllUsers,
   handleGoogleLogin,
   logout,
   passwordProtectionMiddleware,
+  resetPassword,
   sendOTP,
   verifOTP,
 } from "../controllers/AuthController.js";
@@ -65,4 +67,6 @@ router.put('/edit/dokument/:id',editImage)
 router.delete('/delete/dokument/:id',deleteImage)
 router.get('/users', passwordProtectionMiddleware, getAllUsers);
 router.get('/search/:username',searchByUsername)
+router.post('/reset-password/:uid' , resetPassword)
+router.delete('/delete/:uid' , deleteUser)
 export default router;
