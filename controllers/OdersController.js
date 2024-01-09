@@ -8,7 +8,7 @@ export const submitOrder = async (req, res) => {
   try {
     const { uid, username, orderDetails, location } = req.body;
 
-    const { nm_product, qty, price, name, url, telp } = orderDetails;
+    const { nm_product, qty, price, name, url, telp, ket } = orderDetails;
 
     const {
       address,
@@ -47,8 +47,9 @@ export const submitOrder = async (req, res) => {
             name,
             url,
             telp,
+           
             status: "pending",
-            ket: "-",
+            ket: ket,
           },
         },
         location: {
@@ -267,18 +268,16 @@ export const getNotifications = async (req, res) => {
 };
 
 export const passwordMiddleware = (req, res, next) => {
-  const expectedPassword = 'tangkas'; // Change this to your desired password
+  const expectedPassword = "tangkas"; // Change this to your desired password
 
   const providedPassword = req.headers.authorization;
 
   if (!providedPassword || providedPassword !== expectedPassword) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  // Password is correct, continue with the next middleware or route handler
   next();
 };
-
 
 export const chartData = async (req, res) => {
   try {
@@ -293,15 +292,17 @@ export const chartData = async (req, res) => {
       },
     });
 
-    // Mengelompokkan pesanan berdasarkan bulan pembuatan
     const ordersGroupedByMonth = completedOrders.reduce((acc, order) => {
-      const month = order.createdAt.toISOString().split('-').slice(0, 2).join('-');
+      const month = order.createdAt
+        .toISOString()
+        .split("-")
+        .slice(0, 2)
+        .join("-");
       acc[month] = acc[month] || [];
       acc[month].push(order);
       return acc;
     }, {});
 
-    // Menghitung total penghasilan per bulan
     const monthlyEarnings = Object.keys(ordersGroupedByMonth).map((month) => {
       const orders = ordersGroupedByMonth[month];
       const totalEarnings = orders.reduce((acc, order) => acc + order.price, 0);
@@ -313,6 +314,39 @@ export const chartData = async (req, res) => {
     console.error("Error fetching chart data:", error);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await prisma.$disconnect(); // Menutup koneksi Prisma
+    await prisma.$disconnect();
+  }
+};
+
+export const postDeskripsiService = async (req, res) => {
+  try {
+    const { uuid, desc /* other fields */ } = req.body;
+
+    const orderDetails = await prisma.orderDetails.findFirst({
+      where: {
+        uuid: uuid,
+      },
+    });
+
+    if (!orderDetails) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Order details not found" });
+    }
+
+    // Now you have the orderDetails, you can update the desc field or do other operations
+    const updatedOrderDetails = await prisma.orderDetails.update({
+      where: {
+        id: orderDetails.id,
+      },
+      data: {
+        desc: desc,
+      },
+    });
+
+    res.status(200).json({ success: true, message: "Berhasil", status: 200 });
+  } catch (error) {
+    console.error("Error updating order details:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };

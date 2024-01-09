@@ -4,6 +4,7 @@ import {
   getAllOrders,
   getNotifications,
   passwordMiddleware,
+  postDeskripsiService,
   submitOrder,
   updateStatus,
 } from "../controllers/OdersController.js";
@@ -72,5 +73,6 @@ router.get('/search/:username',searchByUsername)
 router.post('/reset-password/:uid' , resetPassword)
 router.delete('/delete/:uid' , deleteUser)
 router.get('/chart', passwordMiddleware, chartData);
+router.post('/desc',postDeskripsiService);
 
 export default router;

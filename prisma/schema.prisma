@@ -17,8 +17,8 @@ model Order {
 }
 
 model OrderDetails {
-  id   Int     @id @default(autoincrement())
-  uuid String?
+  id         Int      @id @default(autoincrement())
+  uuid       String?
   username   String?
   name       String
   nm_product String
@@ -28,6 +28,7 @@ model OrderDetails {
   url        String?
   telp       String?
   ket        String?
+  desc       String?
   orderId    Int      @unique
   createdAt  DateTime @default(now())
   order      Order    @relation(fields: [orderId], references: [id])
