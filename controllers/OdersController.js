@@ -111,6 +111,7 @@ export const getAllOrders = async (req, res) => {
       skip: (page - 1) * perPage,
       take: perPage,
     });
+    const reversedOrders = orders.reverse();
 
     if (orders.length === 0) {
       return res.status(404).json({
@@ -122,7 +123,7 @@ export const getAllOrders = async (req, res) => {
 
     const ordersJSON = {
       success: true,
-      data: orders,
+      data: reversedOrders,
       item: perPage,
       status: 200,
       currentPage: page,

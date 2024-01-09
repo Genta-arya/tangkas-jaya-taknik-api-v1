@@ -432,10 +432,11 @@ export const getAllUsers = async (req, res) => {
           role: true,
         },
       });
+      const reversedOrders = users.reverse();
 
       res.status(200).json({
         success: true,
-        data: users,
+        data: reversedOrders,
       });
     });
   } catch (error) {

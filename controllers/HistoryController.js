@@ -16,21 +16,26 @@ export const getHistory = async (req, res) => {
         include: {
           orderDetails: true,
           location: true,
-          images:true,
+          images: true,
+        },
+        orderBy: {
+          createdAt: 'asc', // Display oldest orders first
         },
       });
 
+      const reversedOrders = orders.reverse(); // Reverse the order of the array
+
       res.json({
-        orders,
-        currentPage: 0, 
-        totalPages: 1, 
+        orders: reversedOrders,
+        currentPage: 0,
+        totalPages: 1,
       });
     } catch (error) {
       console.error("Error retrieving orders:", error);
       res.status(500).send("Internal Server Error");
     }
   } else {
-    // Apply pagination for non-zero page value
+   
     const skip = (parseInt(page) - 1) * parseInt(perPage);
 
     try {
@@ -41,8 +46,9 @@ export const getHistory = async (req, res) => {
         include: {
           orderDetails: true,
           location: true,
-          images:true,
+          images: true,
         },
+      
         skip: skip,
         take: parseInt(perPage),
       });
@@ -55,8 +61,10 @@ export const getHistory = async (req, res) => {
 
       const totalPages = Math.ceil(totalOrders / parseInt(perPage));
 
+      const reversedOrders = orders.reverse(); // Reverse the order of the array
+
       res.json({
-        orders,
+        orders: reversedOrders,
         currentPage: parseInt(page),
         totalPages,
       });
@@ -66,7 +74,6 @@ export const getHistory = async (req, res) => {
     }
   }
 };
-
 
 
 export const searchByUsername = async (req, res) => {
