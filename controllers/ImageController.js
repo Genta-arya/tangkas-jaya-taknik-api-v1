@@ -4,6 +4,7 @@ import { bucket } from "../lib/Firebase.js";
 const prisma = new PrismaClient();
 
 export const uploadImage = async (req, res) => {
+  const { nm_product, orderId, orderDetailId, limit } = req.body;
   try {
     const thumbnailFiles = Array.isArray(req.files.thumbnail)
       ? req.files.thumbnail
@@ -14,13 +15,11 @@ export const uploadImage = async (req, res) => {
         error: "image tidak boleh kosong",
       });
     }
-    if (thumbnailFiles.length > 3) {
+    if (thumbnailFiles.length > limit) {
       return res.status(400).json({
-        error: "Hanya dapat mengupload maksimal 3 gambar",
+        error: `Maaf pesanan ini sudah memiliki ${limit} gambar`,
       });
     }
-
-    const { nm_product, orderId, orderDetailId } = req.body;
 
     const orderImageCount = await prisma.image.count({
       where: {
@@ -35,11 +34,11 @@ export const uploadImage = async (req, res) => {
     });
 
     if (
-      orderImageCount + thumbnailFiles.length > 3 ||
-      orderDetailsImageCount + thumbnailFiles.length > 3
+      orderImageCount + thumbnailFiles.length > limit ||
+      orderDetailsImageCount + thumbnailFiles.length > limit
     ) {
       return res.status(400).json({
-        error: "Maaf pesanan ini sudah memiliki 3 gambar",
+        error: `Maaf pesanan ini sudah memiliki ${limit} gambar`,
       });
     }
 
@@ -70,7 +69,6 @@ export const uploadImage = async (req, res) => {
 
       // Example usage to generate a random string of length 8
       const randomString = generateRandomString(8);
-      
 
       const sanitizedNmProduct = nm_product.replace(/[^a-zA-Z0-9_-]/g, "_");
       const sanitizedNmProductWithRandom = `nm_product_dokumentasi_${randomString}`;

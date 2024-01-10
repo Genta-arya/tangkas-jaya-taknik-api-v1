@@ -32,6 +32,7 @@ import {
 } from "../controllers/CommentController.js";
 import { sendEmail } from "../controllers/EmailController.js";
 import { deleteImage, editImage, uploadImage } from "../controllers/ImageController.js";
+import { createDiscount,  getVouchersByAuthId, verifyVoucherByUsername } from "../controllers/DiscountController.js";
 const { createCategory, createProduct, getAllProduct } = ProductController;
 
 const router = express.Router();
@@ -74,5 +75,7 @@ router.post('/reset-password/:uid' , resetPassword)
 router.delete('/delete/:uid' , deleteUser)
 router.get('/chart', passwordMiddleware, chartData);
 router.post('/desc',postDeskripsiService);
-
+router.post('/discount', createDiscount);
+router.get('/vouchers/:authId', getVouchersByAuthId);
+router.post('/verify-voucher', verifyVoucherByUsername);
 export default router;

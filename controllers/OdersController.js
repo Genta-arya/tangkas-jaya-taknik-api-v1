@@ -47,7 +47,7 @@ export const submitOrder = async (req, res) => {
             name,
             url,
             telp,
-           
+           desc: "-",
             status: "pending",
             ket: ket,
           },
