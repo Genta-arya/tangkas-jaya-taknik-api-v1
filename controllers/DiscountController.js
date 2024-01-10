@@ -69,6 +69,11 @@ export const createDiscount = async (req, res) => {
             margin: 5px;
            
           }
+          span {
+            color: black;
+            margin: 25px 0 5px 0; /* Atur margin-top menjadi 10px */
+          }
+          
           .footer {
             margin-top: 20px;
             text-align: center;
@@ -83,11 +88,11 @@ export const createDiscount = async (req, res) => {
             cursor: pointer;
           }
           #voucherCode {
-            border: 1px solid orange;
+          
             color: orange;
             font-size: 20px;
             padding: 5px;
-            border-radius: 5px;
+           
             cursor: pointer; /* Menambahkan cursor pointer */
           }
         </style>
@@ -158,12 +163,11 @@ export const getVouchersByAuthId = async (req, res) => {
   }
 };
 
-
 export const verifyVoucherByUsername = async (req, res) => {
-    try {
+  try {
     const username = req.body.username;
     const voucherCode = req.body.voucherCode;
-   
+
     const voucher = await prisma.discount.findFirst({
       where: {
         username: username,
@@ -176,7 +180,7 @@ export const verifyVoucherByUsername = async (req, res) => {
         disc: true,
       },
     });
-   
+
     if (voucher) {
       if (voucher.exp > new Date() && voucher.status === "active") {
         // Update status voucher menjadi "inactive" berdasarkan id
@@ -184,7 +188,7 @@ export const verifyVoucherByUsername = async (req, res) => {
           where: { id: voucher.id },
           data: { status: "inactive" },
         });
-   
+
         res.json({
           message: `${username} memiliki voucher ${voucherCode}`,
           data: voucher,
@@ -204,10 +208,8 @@ export const verifyVoucherByUsername = async (req, res) => {
         message: `Voucher tidak ditemukan ${voucherCode}`,
       });
     }
-    } catch (error) {
+  } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
-    }
-   };
-   
-   
+  }
+};
