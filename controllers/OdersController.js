@@ -2,11 +2,13 @@ import { PrismaClient } from "@prisma/client";
 
 import pkg from "firebase-admin";
 import { database, firebase } from "../lib/Firebase.js";
+import { UseVoucher } from "./DiscountController.js";
 const prisma = new PrismaClient();
 
 export const submitOrder = async (req, res) => {
   try {
-    const { uid, username, orderDetails, location } = req.body;
+    const { uid, username, orderDetails, location, voucherCode, CategoryId } =
+      req.body;
 
     const { nm_product, qty, price, name, url, telp, ket } = orderDetails;
 
@@ -47,7 +49,7 @@ export const submitOrder = async (req, res) => {
             name,
             url,
             telp,
-           desc: "-",
+            desc: "-",
             status: "pending",
             ket: ket,
           },
@@ -66,7 +68,50 @@ export const submitOrder = async (req, res) => {
       },
     });
 
-    res.status(201).json({ success: true, order, status: 201 });
+    const voucher = await prisma.discount.findFirst({
+      where: {
+        username: username,
+        code: voucherCode,
+      },
+      select: {
+        id: true,
+        exp: true,
+        status: true,
+        disc: true,
+        categories: true,
+      },
+    });
+
+    if (voucher) {
+      const isValidCategory = voucher.categories[0]?.categoryId === CategoryId;
+
+      if (!isValidCategory) {
+        return res.json({
+          message: `Voucher ${voucherCode} tidak sesuai Kategori.`,
+        });
+      }
+
+      if (voucher.exp > new Date() && voucher.status === "active") {
+        await prisma.discount.update({
+          where: { id: voucher.id },
+          data: { status: "inactive" },
+        });
+        return res.status(201).json({ success: true, order, status: 201 });
+      } else {
+        let message = "";
+        if (voucher.exp <= new Date()) {
+          message += `Voucher ${voucherCode} sudah kadaluarsa`;
+        }
+        if (voucher.status !== "active") {
+          message += `Voucher ${voucherCode} Sudah digunakan`;
+        }
+        return res.json({ message: message });
+      }
+    } else {
+      return res.json({
+        message: `Voucher tidak ditemukan ${voucherCode}`,
+      });
+    }
   } catch (error) {
     console.error("Error submitting order:", error);
     res

@@ -15,23 +15,17 @@ let transporter = nodemailer.createTransport({
 
 export const createDiscount = async (req, res) => {
   try {
-    // Mengambil data dari request body
-    const { code, exp, status, disc, select, email, username } = req.body;
+    const { code, exp, status, disc, select, email, username, categoryIds } =
+      req.body;
 
     const exp_format = new Date(exp).toISOString();
     const currentDate = new Date().toISOString();
+    const categoryId = parseInt(categoryIds);
 
     let finalStatus = status;
     if (exp_format <= currentDate) {
       finalStatus = "inactive";
     }
-
-    const deletedVouchers = await prisma.discount.deleteMany({
-      where: {
-        status: "inactive",
-      },
-    });
-    console.log(`Deleted ${deletedVouchers.count} vouchers.`);
 
     const disc_float = parseFloat(disc) / 100;
     const newDiscount = await prisma.discount.create({
@@ -46,6 +40,13 @@ export const createDiscount = async (req, res) => {
             uid: select,
           },
         },
+      },
+    });
+
+    await prisma.categoryOnDiscount.create({
+      data: {
+        discountId: newDiscount.id,
+        categoryId: categoryId,
       },
     });
 
@@ -127,9 +128,7 @@ export const createDiscount = async (req, res) => {
 
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        console.log(error);
       } else {
-        console.log("Email sent: " + info.response);
       }
     });
 
@@ -139,7 +138,6 @@ export const createDiscount = async (req, res) => {
     console.error("Error handling login:", error);
   }
 };
-
 export const getVouchersByAuthId = async (req, res) => {
   try {
     const { authId } = req.params;
@@ -147,6 +145,13 @@ export const getVouchersByAuthId = async (req, res) => {
     const vouchers = await prisma.discount.findMany({
       where: {
         authId: Number(authId),
+      },
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
       },
     });
 
@@ -156,7 +161,17 @@ export const getVouchersByAuthId = async (req, res) => {
         .json({ message: "No vouchers found for this authId" });
     }
 
-    res.status(200).json({ data: vouchers });
+    const vouchersWithCategoryDetails = vouchers.map((voucher) => {
+      const categoryDetails = voucher.categories.map((categoryOnDiscount) => {
+        return {
+          name: categoryOnDiscount.category.nm_category,
+          id: categoryOnDiscount.categoryId,
+        };
+      });
+      return { ...voucher, categories: categoryDetails };
+    });
+
+    res.status(200).json({ data: vouchersWithCategoryDetails });
   } catch (error) {
     res.status(500).json({ error: error.message });
     console.error("Error handling getVouchersByAuthId:", error);
@@ -164,6 +179,59 @@ export const getVouchersByAuthId = async (req, res) => {
 };
 
 export const verifyVoucherByUsername = async (req, res) => {
+  try {
+    const username = req.body.username;
+    const voucherCode = req.body.voucherCode;
+    const CategoryId = req.body.categoryId;
+
+    const voucher = await prisma.discount.findFirst({
+      where: {
+        username: username,
+        code: voucherCode,
+      },
+      select: {
+        id: true,
+        exp: true,
+        status: true,
+        disc: true,
+        categories: true, // Include categories in the selected fields
+      },
+    });
+
+    if (voucher) {
+      const isValidCategory = voucher.categories[0]?.categoryId === CategoryId;
+      if (!isValidCategory) {
+        return res.json({
+          message: `Voucher ${voucherCode} tidak sesuai Kategori.`,
+        });
+      }
+
+      if (voucher.exp > new Date() && voucher.status === "active") {
+        res.json({
+          message: `${username} memiliki voucher ${voucherCode}`,
+          data: voucher,
+        });
+      } else {
+        let message = "";
+        if (voucher.exp <= new Date()) {
+          message += `Voucher ${voucherCode} sudah kadaluarsa`;
+        }
+        if (voucher.status !== "active") {
+          message += `Voucher ${voucherCode} Sudah digunakan`;
+        }
+        res.json({ message: message });
+      }
+    } else {
+      res.json({
+        message: `Voucher tidak ditemukan ${voucherCode}`,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const UseVoucher = async (req, res) => {
   try {
     const username = req.body.username;
     const voucherCode = req.body.voucherCode;
@@ -183,7 +251,6 @@ export const verifyVoucherByUsername = async (req, res) => {
 
     if (voucher) {
       if (voucher.exp > new Date() && voucher.status === "active") {
-        // Update status voucher menjadi "inactive" berdasarkan id
         await prisma.discount.update({
           where: { id: voucher.id },
           data: { status: "inactive" },
@@ -209,7 +276,6 @@ export const verifyVoucherByUsername = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };

@@ -23,7 +23,10 @@ import {
   verifOTP,
 } from "../controllers/AuthController.js";
 
-import { getHistory, searchByUsername } from "../controllers/HistoryController.js";
+import {
+  getHistory,
+  searchByUsername,
+} from "../controllers/HistoryController.js";
 
 import * as ProductController from "../controllers/ProductController.js";
 import {
@@ -31,8 +34,18 @@ import {
   postComment,
 } from "../controllers/CommentController.js";
 import { sendEmail } from "../controllers/EmailController.js";
-import { deleteImage, editImage, uploadImage } from "../controllers/ImageController.js";
-import { createDiscount,  getVouchersByAuthId, verifyVoucherByUsername } from "../controllers/DiscountController.js";
+import {
+  deleteImage,
+  editImage,
+  getAllImage,
+  uploadImage,
+} from "../controllers/ImageController.js";
+import {
+  UseVoucher,
+  createDiscount,
+  getVouchersByAuthId,
+  verifyVoucherByUsername,
+} from "../controllers/DiscountController.js";
 const { createCategory, createProduct, getAllProduct } = ProductController;
 
 const router = express.Router();
@@ -64,18 +77,20 @@ router.post("/send-otp", sendOTP);
 router.post("/verify", verifOTP);
 router.get("/notifications/:username", getNotifications);
 router.post("/change-password", changePassowrd);
-router.post('/send-email',sendEmail)
-router.get('/notifikasi/:username',getNotifications)
-router.post('/upload/dokument',uploadImage)
-router.put('/edit/dokument/:id',editImage)
-router.delete('/delete/dokument/:id',deleteImage)
-router.get('/users', passwordProtectionMiddleware, getAllUsers);
-router.get('/search/:username',searchByUsername)
-router.post('/reset-password/:uid' , resetPassword)
-router.delete('/delete/:uid' , deleteUser)
-router.get('/chart', passwordMiddleware, chartData);
-router.post('/desc',postDeskripsiService);
-router.post('/discount', createDiscount);
-router.get('/vouchers/:authId', getVouchersByAuthId);
-router.post('/verify-voucher', verifyVoucherByUsername);
+router.post("/send-email", sendEmail);
+router.get("/notifikasi/:username", getNotifications);
+router.post("/upload/dokument", uploadImage);
+router.put("/edit/dokument/:id", editImage);
+router.delete("/delete/dokument/:id", deleteImage);
+router.get("/users", passwordProtectionMiddleware, getAllUsers);
+router.get("/search/:username", searchByUsername);
+router.post("/reset-password/:uid", resetPassword);
+router.delete("/delete/:uid", deleteUser);
+router.get("/chart", passwordMiddleware, chartData);
+router.post("/desc", postDeskripsiService);
+router.post("/discount", createDiscount);
+router.get("/vouchers/:authId", getVouchersByAuthId);
+router.post("/verify-voucher", verifyVoucherByUsername);
+router.post("/useVoucher", UseVoucher);
+router.get("/image", getAllImage);
 export default router;

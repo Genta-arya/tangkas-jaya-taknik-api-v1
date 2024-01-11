@@ -215,3 +215,16 @@ export const deleteImage = async (req, res) => {
     });
   }
 };
+
+export const getAllImage = async (req, res) => {
+  try {
+    const prisma = new PrismaClient();
+    const allImages = await prisma.image.findMany();
+    const shuffledImages = allImages.sort(() => 0.5 - Math.random());
+    const selectedImages = shuffledImages.slice(0, 6);
+    const imageUrls = selectedImages.map((image) => image.imageUrl);
+    res.json({ data: imageUrls });
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};

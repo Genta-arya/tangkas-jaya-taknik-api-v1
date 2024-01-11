@@ -69,15 +69,33 @@ model Auth {
 }
 
 model Discount {
-  id     Int      @id @default(autoincrement())
-  code   String
-  exp    DateTime
-  username String
-  status String
-  disc   Float
-  authId Int
-  auth   Auth     @relation(fields: [authId], references: [uid])
+ id    Int     @id @default(autoincrement())
+ code  String
+ exp   DateTime
+ username String
+ status String
+ disc  Float
+ authId Int
+ auth  Auth    @relation(fields: [authId], references: [uid])
+ categories CategoryOnDiscount[]
 }
+
+model Category {
+ id         Int       @id @default(autoincrement())
+ nm_category String
+ products   Product[]
+ discounts  CategoryOnDiscount[]
+}
+
+model CategoryOnDiscount {
+ discountId Int
+ discount  Discount  @relation(fields: [discountId], references: [id])
+ categoryId Int
+ category  Category  @relation(fields: [categoryId], references: [id])
+
+ @@id([discountId, categoryId])
+}
+
 
 model Comment {
   id        Int      @id @default(autoincrement())
@@ -90,11 +108,6 @@ model Comment {
   @@index([uid], name: "user_id")
 }
 
-model Category {
-  id          Int       @id @default(autoincrement())
-  nm_category String
-  products    Product[]
-}
 
 model Product {
   id         Int      @id @default(autoincrement())

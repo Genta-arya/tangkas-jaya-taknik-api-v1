@@ -23,10 +23,10 @@ export const getHistory = async (req, res) => {
         },
       });
 
-      const reversedOrders = orders.reverse(); // Reverse the order of the array
+     
 
       res.json({
-        orders: reversedOrders,
+        orders: orders,
         currentPage: 0,
         totalPages: 1,
       });
@@ -61,10 +61,10 @@ export const getHistory = async (req, res) => {
 
       const totalPages = Math.ceil(totalOrders / parseInt(perPage));
 
-      const reversedOrders = orders.reverse(); // Reverse the order of the array
+    
 
       res.json({
-        orders: reversedOrders,
+        orders: orders,
         currentPage: parseInt(page),
         totalPages,
       });
