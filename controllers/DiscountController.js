@@ -3,8 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 import nodemailer from "nodemailer";
-
-// Konfigurasi nodemailer
+import { database, firebase } from "../lib/Firebase.js";
 let transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -15,7 +14,7 @@ let transporter = nodemailer.createTransport({
 
 export const createDiscount = async (req, res) => {
   try {
-    const { code, exp, status, disc, select, email, username, categoryIds } =
+    const { code, exp, status, disc, select, email, username, categoryIds , name } =
       req.body;
 
     const exp_format = new Date(exp).toISOString();
@@ -48,6 +47,16 @@ export const createDiscount = async (req, res) => {
         discountId: newDiscount.id,
         categoryId: categoryId,
       },
+    });
+
+
+    const message="tesat"
+
+
+
+    const databaseRef = database.ref(`/voucher/${username}-${code}`);
+    await databaseRef.set({
+      message,
     });
 
     let mailOptions = {
@@ -112,7 +121,7 @@ export const createDiscount = async (req, res) => {
       </head>
       <body>
         <h1>Selamat, Anda mendapatkan voucher discount sebesar ${disc}%</h1>
-        <p>Gunakan Voucher ini untuk mendapatkan Discount Biaya Service </P>
+        <p>Gunakan Voucher ini untuk mendapatkan Discount Biaya Service ${name}</P>
         <p>Berikut kode voucher Anda: <br><span id="voucherCode" onclick="copyToClipboard()"> ${code}</span></p>
         <p>Expired ${exp} </P
         <p> Terima kasih :)
@@ -138,13 +147,15 @@ export const createDiscount = async (req, res) => {
     console.error("Error handling login:", error);
   }
 };
+
+
 export const getVouchersByAuthId = async (req, res) => {
   try {
-    const { authId } = req.params;
+    const { username } = req.params;
 
     const vouchers = await prisma.discount.findMany({
       where: {
-        authId: Number(authId),
+        username: username ,
       },
       include: {
         categories: {

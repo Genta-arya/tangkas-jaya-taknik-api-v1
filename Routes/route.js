@@ -89,7 +89,7 @@ router.delete("/delete/:uid", deleteUser);
 router.get("/chart", passwordMiddleware, chartData);
 router.post("/desc", postDeskripsiService);
 router.post("/discount", createDiscount);
-router.get("/vouchers/:authId", getVouchersByAuthId);
+router.get("/vouchers/:username", getVouchersByAuthId);
 router.post("/verify-voucher", verifyVoucherByUsername);
 router.post("/useVoucher", UseVoucher);
 router.get("/image", getAllImage);

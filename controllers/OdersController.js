@@ -1,8 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
-import pkg from "firebase-admin";
 import { database, firebase } from "../lib/Firebase.js";
-import { UseVoucher } from "./DiscountController.js";
+
 const prisma = new PrismaClient();
 
 export const submitOrder = async (req, res) => {
