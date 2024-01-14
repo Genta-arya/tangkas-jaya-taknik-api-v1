@@ -93,4 +93,11 @@ router.get("/vouchers/:username", getVouchersByAuthId);
 router.post("/verify-voucher", verifyVoucherByUsername);
 router.post("/useVoucher", UseVoucher);
 router.get("/image", getAllImage);
+router.post("/created-discount", ProductController.createDiscountProduct);
+router.get("/product-discount/:id", ProductController.getDiscountProductById);
+router.put("/product-discount", ProductController.editDiscountProductById);
+router.delete(
+  "/product-discount/:discountId",
+  ProductController.deleteDiscount
+);
 export default router;

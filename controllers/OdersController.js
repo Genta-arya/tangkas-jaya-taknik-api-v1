@@ -131,7 +131,6 @@ export const getAllOrders = async (req, res) => {
     whereClause = {
       username: {
         contains: q,
-        mode: "insensitive",
       },
     };
   }
@@ -147,7 +146,7 @@ export const getAllOrders = async (req, res) => {
       include: {
         orderDetails: {
           include: {
-            images: true, // Assuming "images" is the field within orderDetails that refers to the images
+            images: true,
           },
         },
         location: true,
@@ -181,7 +180,7 @@ export const getAllOrders = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: "Internal Server Error",
+      error: "Error fetching orders. Please try again later.",
       status: 500,
     });
   } finally {

@@ -112,12 +112,21 @@ model Comment {
 
 
 model Product {
-  id         Int      @id @default(autoincrement())
-  nm_product String
-  desc       String
-  price      Int
-  thumbnail  String?
-  url        String?
-  categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])
+ id       Int       @id @default(autoincrement())
+ nm_product String
+ desc     String
+ price    Int
+ thumbnail String?
+ url      String?
+ categoryId Int
+ category Category @relation(fields: [categoryId], references: [id])
+ discount DiscountProduct?
+}
+
+model DiscountProduct {
+ id             Int   @id @default(autoincrement())
+ productId      Int   @unique
+ product        Product @relation(fields: [productId], references: [id])
+ discountPercentage Float?
+ expirationDate  DateTime
 }
