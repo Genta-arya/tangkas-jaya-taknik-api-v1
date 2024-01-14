@@ -315,17 +315,30 @@ export const getAllProduct = async (req, res) => {
     const allProducts = await prisma.product.findMany({
       include: {
         category: true,
+        discount: true, // Menyertakan data diskon
       },
     });
 
-    return res
-      .status(200)
-      .json({ products: allProducts, message: "success", status: 200 });
+    return res.status(200).json({
+      products: allProducts.map((product) => ({
+        id: product.id,
+        nm_product: product.nm_product,
+        desc: product.desc,
+        price: product.price,
+        thumbnail: product.thumbnail,
+        url: product.url,
+        categoryId: product.categoryId,
+        category: product.category,
+        discount: product.discount,
+      })),
+      message: "success",
+      status: 200,
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
-    return res
-      .status(500)
-      .json({ error: "Terjadi kesalahan saat mengambil produk" });
+    return res.status(500).json({
+      error: "Terjadi kesalahan saat mengambil produk",
+    });
   } finally {
     await prisma.$disconnect();
   }
@@ -368,14 +381,12 @@ export const DeleteCategory = async (req, res) => {
   const { categoryId } = req.params;
 
   try {
-    // Temukan kategori berdasarkan ID
     const category = await prisma.category.findUnique({
       where: {
         id: parseInt(categoryId),
       },
     });
 
-    // Jika kategori tidak ditemukan, kirim respons 404
     if (!category) {
       return res.status(404).json({ message: "Kategori tidak ditemukan" });
     }
@@ -428,8 +439,10 @@ export const createDiscountProduct = async (req, res) => {
     });
 
     if (existingDiscount) {
-      res.status(404).json({ message: "Produk sudah memiliki diskon" , status: 404 });
-      return; // Menghentikan eksekusi selanjutnya agar tidak mencoba membuat diskon lagi
+      res
+        .status(404)
+        .json({ message: "Produk sudah memiliki diskon", status: 404 });
+      return;
     }
     const discountProduct = await prisma.discountProduct.create({
       data: {
@@ -455,6 +468,11 @@ export const getDiscountProductById = async (req, res) => {
         productId: Number(id),
       },
     });
+
+    if (!discountProduct) {
+      return res.status(404).json({ error: "Discount product not found" });
+    }
+
     res.status(200).json({ data: discountProduct });
   } catch (error) {
     console.log(error);
@@ -514,31 +532,29 @@ export const deleteDiscount = async (req, res) => {
     const id = parseInt(discountId, 10);
 
     try {
-      // Attempt to find the discount product by ID
       const existingDiscount = await prisma.discountProduct.findUnique({
         where: {
           productId: id,
         },
       });
 
-      // Check if the discount product exists
       if (!existingDiscount) {
         res.status(404).json({ message: "Produk ini belum mempunyai diskon" });
         return;
       }
 
-      // Delete the discount product
       const deletedDiscount = await prisma.discountProduct.delete({
         where: {
           productId: id,
         },
       });
 
-      res
-        .status(200)
-        .json({ message: "Discount deleted successfully", deletedDiscount , status: 200 });
+      res.status(200).json({
+        message: "Discount deleted successfully",
+        deletedDiscount,
+        status: 200,
+      });
     } catch (error) {
-      // Handle other errors
       console.error(error);
       res.status(500).json({ message: "Internal server error" });
     }
@@ -547,3 +563,4 @@ export const deleteDiscount = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+

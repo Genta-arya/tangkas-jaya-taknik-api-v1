@@ -100,4 +100,5 @@ router.delete(
   "/product-discount/:discountId",
   ProductController.deleteDiscount
 );
+
 export default router;
