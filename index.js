@@ -16,13 +16,31 @@ dotenv.config();
 
 const app = express();
 app.use(express.static("public"));
+
 app.delete("/discounts/expired", async (req, res) => {
   try {
     const discountProducts = await prisma.discountProduct.findMany();
     const currentDate = new Date();
-    const discountProductsToDelete = discountProducts.filter(
-      (product) => product.expirationDate < currentDate
+    const currentDateWithoutTime = new Date(
+      currentDate.toISOString().split("T")[0]
     );
+
+    const discountProductsToDelete = discountProducts.filter((product) => {
+      const productExpirationDate = new Date(product.expirationDate);
+      const productDateWithoutTime = new Date(
+        productExpirationDate.toISOString().split("T")[0]
+      );
+
+      return (
+        productDateWithoutTime.getTime() <= currentDateWithoutTime.getTime()
+      );
+    });
+
+    if (discountProductsToDelete.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No expired discount products found" });
+    }
 
     for (const productToDelete of discountProductsToDelete) {
       await prisma.discountProduct.delete({
@@ -35,6 +53,7 @@ app.delete("/discounts/expired", async (req, res) => {
     res
       .status(200)
       .json({ message: "Expired discount products deleted successfully" });
+    console.log("dihapus");
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
