@@ -21,20 +21,14 @@ app.delete("/discounts/expired", async (req, res) => {
   try {
     const discountProducts = await prisma.discountProduct.findMany();
     const currentDate = new Date();
-    const currentDateWithoutTime = new Date(
-      currentDate.toISOString().split("T")[0]
+
+    const discountProductsToDelete = discountProducts.filter(
+      async (product) => {
+        const productExpirationDate = new Date(product.expirationDate);
+
+        return productExpirationDate <= currentDate;
+      }
     );
-
-    const discountProductsToDelete = discountProducts.filter((product) => {
-      const productExpirationDate = new Date(product.expirationDate);
-      const productDateWithoutTime = new Date(
-        productExpirationDate.toISOString().split("T")[0]
-      );
-
-      return (
-        productDateWithoutTime.getTime() <= currentDateWithoutTime.getTime()
-      );
-    });
 
     if (discountProductsToDelete.length === 0) {
       return res
@@ -50,10 +44,7 @@ app.delete("/discounts/expired", async (req, res) => {
       });
     }
 
-    res
-      .status(200)
-      .json({ message: "Expired discount products deleted successfully" });
-    console.log("dihapus");
+    res.status(200).json({ message: "Expired discount " });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

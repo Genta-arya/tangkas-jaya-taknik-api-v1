@@ -14,8 +14,17 @@ let transporter = nodemailer.createTransport({
 
 export const createDiscount = async (req, res) => {
   try {
-    const { code, exp, status, disc, select, email, username, categoryIds , name } =
-      req.body;
+    const {
+      code,
+      exp,
+      status,
+      disc,
+      select,
+      email,
+      username,
+      categoryIds,
+      name,
+    } = req.body;
 
     const exp_format = new Date(exp).toISOString();
     const currentDate = new Date().toISOString();
@@ -49,10 +58,7 @@ export const createDiscount = async (req, res) => {
       },
     });
 
-
-    const message="tesat"
-
-
+    const message = "tesat";
 
     const databaseRef = database.ref(`/voucher/${username}-${code}`);
     await databaseRef.set({
@@ -148,14 +154,13 @@ export const createDiscount = async (req, res) => {
   }
 };
 
-
 export const getVouchersByAuthId = async (req, res) => {
   try {
     const { username } = req.params;
 
     const vouchers = await prisma.discount.findMany({
       where: {
-        username: username ,
+        username: username,
       },
       include: {
         categories: {
@@ -172,13 +177,30 @@ export const getVouchersByAuthId = async (req, res) => {
         .json({ message: "No vouchers found for this authId" });
     }
 
-    const vouchersWithCategoryDetails = vouchers.map((voucher) => {
+    const currentDate = new Date();
+
+    const vouchersWithCategoryDetails = vouchers.map(async (voucher) => {
+ 
+      const expirationDate = new Date(voucher.exp);
+      if (expirationDate < currentDate) {
+   
+        await prisma.discount.update({
+          where: {
+            id: voucher.id,
+          },
+          data: {
+            status: "inactive",
+          },
+        });
+      }
+
       const categoryDetails = voucher.categories.map((categoryOnDiscount) => {
         return {
           name: categoryOnDiscount.category.nm_category,
           id: categoryOnDiscount.categoryId,
         };
       });
+
       return { ...voucher, categories: categoryDetails };
     });
 
