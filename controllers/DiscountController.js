@@ -178,31 +178,34 @@ export const getVouchersByAuthId = async (req, res) => {
     }
 
     const currentDate = new Date();
+    const currentDateWithoutTime = currentDate.toLocaleDateString();
 
-    const vouchersWithCategoryDetails = vouchers.map(async (voucher) => {
- 
-      const expirationDate = new Date(voucher.exp);
-      if (expirationDate < currentDate) {
-   
-        await prisma.discount.update({
-          where: {
-            id: voucher.id,
-          },
-          data: {
-            status: "inactive",
-          },
+    const vouchersWithCategoryDetails = await Promise.all(
+      vouchers.map(async (voucher) => {
+        const expirationDate = new Date(voucher.exp);
+        const currentDataDateWithoutTime = expirationDate.toLocaleDateString();
+
+        if (currentDataDateWithoutTime <= currentDateWithoutTime) {
+          await prisma.discount.update({
+            where: {
+              id: voucher.id,
+            },
+            data: {
+              status: "inactive",
+            },
+          });
+        }
+
+        const categoryDetails = voucher.categories.map((categoryOnDiscount) => {
+          return {
+            name: categoryOnDiscount.category.nm_category,
+            id: categoryOnDiscount.categoryId,
+          };
         });
-      }
 
-      const categoryDetails = voucher.categories.map((categoryOnDiscount) => {
-        return {
-          name: categoryOnDiscount.category.nm_category,
-          id: categoryOnDiscount.categoryId,
-        };
-      });
-
-      return { ...voucher, categories: categoryDetails };
-    });
+        return { ...voucher, categories: categoryDetails };
+      })
+    );
 
     res.status(200).json({ data: vouchersWithCategoryDetails });
   } catch (error) {
