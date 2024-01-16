@@ -191,7 +191,6 @@ export const getAllOrders = async (req, res) => {
     }
   }
 };
-
 export const updateStatus = async (req, res) => {
   try {
     const { orderId, newStatus } = req.body;
@@ -209,6 +208,8 @@ export const updateStatus = async (req, res) => {
       select: {
         nm_product: true,
         url: true,
+        qty: true,
+        status: true, // tambahkan status di sini
       },
     });
 
@@ -216,9 +217,84 @@ export const updateStatus = async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    const { nm_product, url } = existingOrder;
+    const { nm_product, url, qty, status } = existingOrder;
 
-    // Update order status in the database
+    let message = "";
+    let soldIncrement = 0;
+    let soldDecrement = 0;
+
+    // Mendapatkan productId dari orderDetails
+    const product = await prisma.product.findFirst({
+      where: {
+        nm_product: nm_product,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const productId = product.id;
+
+    switch (newStatus) {
+      case "konfirmasi":
+        message = `Pesananmu dengan ID ${orderId} (${nm_product}) sudah dikonfirmasi. Tunggu informasi selanjutnya atau hubungi admin melalui WhatsApp.`;
+
+        // Jika status sebelumnya adalah "selesai", kurangi qty dari sold
+        if (status === "selesai") {
+          soldDecrement = qty;
+
+          // Melakukan pembaruan pada tabel Product untuk mengurangkan sold
+          await prisma.product.update({
+            where: {
+              id: productId,
+            },
+            data: {
+              sold: {
+                decrement: soldDecrement,
+              },
+            },
+          });
+        }
+        break;
+      case "pending":
+        message = `Pesananmu dengan ID ${orderId} (${nm_product}) akan segera kami konfirmasi.`;
+
+        soldDecrement = qty;
+
+        await prisma.product.update({
+          where: {
+            id: productId,
+          },
+          data: {
+            sold: {
+              decrement: soldDecrement,
+            },
+          },
+        });
+        break;
+      case "selesai":
+        message = `Pesananmu dengan ID ${orderId} (${nm_product}) telah selesai. Terima kasih sudah mempercayai kami untuk memperbaiki AC Anda.`;
+        soldIncrement = qty;
+
+        await prisma.product.update({
+          where: {
+            id: productId,
+          },
+          data: {
+            sold: {
+              increment: soldIncrement,
+            },
+          },
+        });
+        break;
+      default:
+        break;
+    }
+
     await prisma.orderDetails.update({
       where: {
         id: orderId,
@@ -230,22 +306,6 @@ export const updateStatus = async (req, res) => {
         url: url,
       },
     });
-
-    let message = "";
-    switch (newStatus) {
-      case "konfirmasi":
-        message = `Pesananmu dengan ID ${orderId} (${nm_product}) sudah dikonfirmasi. Tunggu informasi selanjutnya atau hubungi admin melalui WhatsApp. `;
-        break;
-      case "pending":
-        message = `Pesananmu dengan ID ${orderId} (${nm_product}) akan segera kami konfirmasi.`;
-        break;
-      case "selesai":
-        message = `Pesananmu dengan ID ${orderId} (${nm_product}) telah selesai. Terima kasih sudah mempercayai kami untuk memperbaiki AC Anda.`;
-        break;
-
-      default:
-        break;
-    }
 
     const databaseRef = database.ref(`/notifications/${orderId}`);
     await databaseRef.set({

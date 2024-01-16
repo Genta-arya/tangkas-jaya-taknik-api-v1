@@ -315,6 +315,7 @@ export const getAllProduct = async (req, res) => {
     const allProducts = await prisma.product.findMany({
       include: {
         category: true,
+        
         discount: true, // Menyertakan data diskon
       },
     });
@@ -323,6 +324,7 @@ export const getAllProduct = async (req, res) => {
       products: allProducts.map((product) => ({
         id: product.id,
         nm_product: product.nm_product,
+        sold: product.sold,
         desc: product.desc,
         price: product.price,
         thumbnail: product.thumbnail,
@@ -330,6 +332,7 @@ export const getAllProduct = async (req, res) => {
         categoryId: product.categoryId,
         category: product.category,
         discount: product.discount,
+        
       })),
       message: "success",
       status: 200,
@@ -481,6 +484,17 @@ export const getDiscountProductById = async (req, res) => {
     await prisma.$disconnect();
   }
 };
+
+
+
+
+
+
+
+
+
+
+
 
 export const editDiscountProductById = async (req, res) => {
   try {
