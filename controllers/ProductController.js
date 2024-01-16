@@ -316,7 +316,7 @@ export const getAllProduct = async (req, res) => {
       include: {
         category: true,
         
-        discount: true, // Menyertakan data diskon
+        discount: true,
       },
     });
 

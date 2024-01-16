@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `Product` MODIFY `sold` INTEGER NULL DEFAULT 0;
